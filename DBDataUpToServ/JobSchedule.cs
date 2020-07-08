@@ -24,7 +24,10 @@ namespace DBDataUpToServ
         public string cURR_SCM;
         private string cURR_OPR;
 
-        public DBConfigM ConfigM { get => configM; set => configM = value; }
+        public void setConfigM(DBConfigM value) { 
+            configM = value;
+            makeSql();
+        }
 
         public JobSchedule(string url,DBConfigM configM) {
             this.url = url;
@@ -43,15 +46,15 @@ namespace DBDataUpToServ
         private void makeSql()
         {
             string sql = "select ";
-            for (int i = 0; i < ConfigM.List.Count; i++) {
-                DBConfigItem item = ConfigM.List[i];
+            for (int i = 0; i < configM.List.Count; i++) {
+                DBConfigItem item = configM.List[i];
                 sql += item.Dbfld+" as "+item.ApiKey;
-                if (i < ConfigM.List.Count - 1) {
+                if (i < configM.List.Count - 1) {
                     sql += ",";
                 }
             }
-            string from = " from " + ConfigM.TbName;
-            string where = " where " + ConfigM.Timefld + ">='{0}' and " + ConfigM.Timefld + "<='{1}'";
+            string from = " from " + configM.TbName;
+            string where = " where " + configM.Timefld + ">='{0}' and " + configM.Timefld + "<='{1}'";
             rsql = sql + from + where;
         }
 
@@ -65,7 +68,7 @@ namespace DBDataUpToServ
 
         public void Start() {
             if (timer != null&&!timer.Enabled) {
-                timer.Interval = 60000 * ConfigM.Inter;//执行间隔时间,单位为毫秒;此时时间间隔为1分钟  
+                timer.Interval = 60000 * configM.Inter;//执行间隔时间,单位为毫秒;此时时间间隔为1分钟  
                 timer.Enabled = true;
                 timer.Elapsed += new System.Timers.ElapsedEventHandler(UpLoadWeightData);
                 timer.Start();
@@ -91,12 +94,12 @@ namespace DBDataUpToServ
                 canRun = false;
                 try
                 {
-                    string bgtime = DBTools.GetSearchBgTime(ConfigM.Sid);
+                    string bgtime = DBTools.GetSearchBgTime(configM.Sid);
                     DateTime d1 = DateTime.Now;
-                    int jgmin = -ConfigM.Inter;
+                    int jgmin = -configM.Inter;
                     d1 = d1.AddMinutes(jgmin);
                     if (string.IsNullOrEmpty(bgtime)) {
-                        bgtime = ConfigM.Bgtime;
+                        bgtime = configM.Bgtime;
                     }
                     string edtime = d1.ToString(ICL.DATE_FMT_L);
                     string s1 = string.Format(rsql, bgtime, edtime);
@@ -162,7 +165,7 @@ namespace DBDataUpToServ
                         {
                             logger.Info("没有查询到数据;");
                         }
-                        DBTools.insertOrUpDate(ConfigM.Sid, edtime);
+                        DBTools.insertOrUpDate(configM.Sid, edtime);
                         updateTabsLogs(string.Format(Tools.Now() + "-->任务执行完成【{0}】",size));
                     }
                     catch (Exception ex)

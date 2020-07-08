@@ -273,7 +273,7 @@ namespace DBDataUp2LY
 
             }
             else {
-                schedule.ConfigM = configM;
+                schedule.setConfigM(configM);
                 schedule.url = CURR_URI;
                 schedule.cURR_SCM = CURR_SCM;
             }

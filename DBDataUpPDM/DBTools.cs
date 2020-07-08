@@ -45,13 +45,25 @@ namespace DBDataUpPDM
                         {
                             string fld = item.ColumnName;
                             object objv = row[fld];
-                            if (item.DataType == System.Type.GetType("System.Boolean"))
+                            if (item.DataType.FullName.Equals("System.Boolean"))
                             {
-                                
-                                jObject.Add(item.ColumnName.ToLower(), bool.Parse(objv.ToString())? 1 :0 );
+                                if (row.IsNull(fld))
+                                {
+                                    jObject.Add(item.ColumnName.ToLower(), 0);
+                                }
+                                else {
+                                    jObject.Add(item.ColumnName.ToLower(), bool.Parse(objv.ToString()) ? 1 : 0);
+                                }
                             }
                             else {
-                                jObject.Add(item.ColumnName.ToLower(), objv == null ? "" : objv + "");
+                                if (row.IsNull(fld))
+                                {
+                                    jObject.Add(item.ColumnName.ToLower(), "");
+                                }
+                                else {
+                                    jObject.Add(item.ColumnName.ToLower(), objv == null ? "" : objv + "");
+                                }
+                                    
                             }
                             
                         }

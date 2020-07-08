@@ -23,7 +23,12 @@ namespace DBDataUp2LY
         public string cURR_SCM;
         private string cURR_OPR;
 
-        public DBConfigM ConfigM { get => configM; set => configM = value; }
+
+        public void setConfigM(DBConfigM value)
+        {
+            configM = value;
+            makeSql();
+        }
 
         public JobSchedule(string url,DBConfigM configM) {
             this.url = url;
