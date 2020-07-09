@@ -14,6 +14,7 @@ namespace DBDataUpPDM
 		private String bgtime;
 		private String timefld;
         private String dbconf;
+        private String cornStr;
 		private List<DBConfigItem> list;
 
         public string Sid { get => sid; set => sid = value; }
@@ -24,6 +25,7 @@ namespace DBDataUpPDM
         public string Timefld { get => timefld; set => timefld = value; }
         public string Dbconf { get => dbconf; set => dbconf = value; }
         public List<DBConfigItem> List { get => list; set => list = value; }
+        public string CornStr { get => cornStr; set => cornStr = value; }
 
         public string getTablePkFld() {
             string pkfld = "F_StdNo";
