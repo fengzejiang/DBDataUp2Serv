@@ -1,6 +1,8 @@
 ﻿using DBDataUpToServ.Properties;
 using Newtonsoft.Json;
 using NLog;
+using Quartz;
+using Quartz.Impl;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -12,6 +14,10 @@ namespace DBDataUpToServ
 {
     public partial class DBDataUpForm : Form
     {
+
+        private const string JobName = "job1";
+        private const string Group = "group1";
+        private const string TrigName = "trigger1";
         public static readonly string ini = Application.StartupPath + @"\initFile.ini";//ini文件
         static IniFiles iniFile = new IniFiles(ini);//初始化文件监听类
         private string  CURR_DBConf = "";
@@ -21,14 +27,24 @@ namespace DBDataUpToServ
         private string CURR_OPR = "";//操作员
         private Logger logger = LogManager.GetCurrentClassLogger();
         private DBConfigM configM;
-        private JobSchedule schedule;
+        //private JobSchedule schedule;
 
-        private delegate void updateLogBox(string strshow);
-
+        ISchedulerFactory schedFact = new StdSchedulerFactory();//Quartz工厂
+        IScheduler sched = null;
+        /// <summary>
+        /// 定义更新消息文本框内容委托
+        /// </summary>
+        /// <param name="strMsg">定时任务传递过来的消息</param>
+        public delegate void UpdateMsgContentEvent(string strMsg);
+        /// <summary>
+        /// 定义更新消息文本框内容委托事件
+        /// </summary>
+        UpdateMsgContentEvent onUpdateMsgContentEvent = null;
         public DBDataUpForm()
         {
             InitializeComponent();
-
+            JobHelperData.OnExecUploadEvent += OnExecUploadEvent;
+            onUpdateMsgContentEvent = new UpdateMsgContentEvent(UpdateTxtMsgContent);
 
         }
 
@@ -48,7 +64,7 @@ namespace DBDataUpToServ
             string queryparam = "type=400&sid=" + configId;
             try
             {
-                string res = Tools.HttpPostInfo(url + "wmdatas2", queryparam);
+                string res = Tools.HttpPostInfo(url + ICL.API_KEY, queryparam);
                 if (!string.IsNullOrWhiteSpace(res))
                 {
                     ResultInfo rInfo = JsonConvert.DeserializeObject<ResultInfo>(res);
@@ -264,7 +280,7 @@ namespace DBDataUpToServ
 
         }
 
-        private void ExcuteTask()
+        private async void ExcuteTask()
         {
             if (!checkConfigFLDInfo())
             {
@@ -274,20 +290,27 @@ namespace DBDataUpToServ
             {
                 return;
             }
-            if (schedule == null)
-            {
-                schedule = new JobSchedule(CURR_URI, configM, CURR_DBID, CURR_SCM, CURR_OPR);
-                schedule.updateTabsLogs += WriteBoxInfo;
-                //this.log_box.BeginInvoke(updateTabsLogs);
 
-            }
-            else
-            {
-                schedule.setConfigM(configM);
-                schedule.url = CURR_URI;
-                schedule.cURR_SCM = CURR_SCM;
-            }
-            schedule.Start();
+            sched = await schedFact.GetScheduler();
+            await sched.Start();
+            JobDataMap map = new JobDataMap();
+            map.Add("conf", configM);
+            map.Add("url", CURR_URI);
+            map.Add("scm", CURR_SCM);
+            map.Add("dbid", CURR_DBID);
+            map.Add("opr", CURR_OPR);
+            IJobDetail job = JobBuilder.Create<WeighDataUpJob>()
+                    .WithIdentity(JobName, Group)
+                    .SetJobData(map)
+                    .Build();
+            // 4.创建 trigger
+            ITrigger trigger = TriggerBuilder.Create()
+                .WithIdentity(TrigName, Group)
+                .WithCronSchedule(configM.CornStr)
+                .Build();
+
+            // 5.使用trigger规划执行任务job
+            await sched.ScheduleJob(job, trigger);
             pic_state.Image = Resources.work;
             makeUIEnable(false);
             btn_start.Enabled = false;
@@ -352,21 +375,27 @@ namespace DBDataUpToServ
             }
         }
 
-        private void WriteBoxInfo(string msg)
+        #region 定义改变消息文本框委托及委托事件
+
+        public void OnExecUploadEvent(string strMsg)
         {
-            if (log_box.InvokeRequired)
-            {
-                log_box.BeginInvoke(new updateLogBox(WriteBoxInfo),msg);
-            }
-            else {
-                if (log_box.Lines.Length > 1000) {
-                    log_box.Clear();
-                }
-                log_box.AppendText(msg + "\r\n");
-                log_box.ScrollToCaret();
-            }
-            GC.Collect();
+            BeginInvoke(onUpdateMsgContentEvent, strMsg);
         }
+
+        /// <summary>
+        /// 更新消息文本框的内容
+        /// </summary>
+        /// <param name="strMsg">定时任务传递过来的消息</param>
+        private void UpdateTxtMsgContent(string strMsg)
+        {
+            log_box.AppendText(strMsg + Environment.NewLine);
+
+            //将滚动条定位到底部
+            log_box.ScrollToCaret();
+
+        }
+
+        #endregion
 
         /// <summary>
         /// 修改配置文件
@@ -396,13 +425,27 @@ namespace DBDataUpToServ
 
         private void btn_stop_Click(object sender, EventArgs e)
         {
-            if (schedule != null) {
-                schedule.Stop();
+            StopTask();
+        }
+
+        private async void StopTask()
+        {
+            try
+            {
+                sched = await schedFact.GetScheduler();
+                await sched.PauseAll();
+                await sched.Clear();
+                await sched.Shutdown();
+                makeUIEnable(false);
+                btn_start.Enabled = true;
+                btn_stop.Enabled = false;
+                pic_state.Image = Resources.stop;
             }
-            makeUIEnable(false);
-            btn_start.Enabled = true;
-            btn_stop.Enabled = false;
-            pic_state.Image = Resources.stop;
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+                MessageBox.Show(ex.Message);
+            }
         }
     }
 }

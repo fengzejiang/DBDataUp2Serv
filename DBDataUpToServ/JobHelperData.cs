@@ -1,4 +1,4 @@
-﻿namespace DBDataUpPDM
+﻿namespace DBDataUpToServ
 {
     public class JobHelperData
     {

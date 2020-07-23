@@ -18,5 +18,7 @@ namespace DBDataUpToServ
         public static readonly string DB_LAB = "数据库配置";
         public static readonly string DB_DBLINK = "DBLINK";
         public static readonly string DATE_FMT_L = "yyyy-MM-dd HH:mm:ss";
+
+        public static readonly string API_KEY = "wmdatas2";
     }
 }

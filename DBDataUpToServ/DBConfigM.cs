@@ -15,7 +15,7 @@ namespace DBDataUpToServ
 		private String timefld;
         private String dbconf;
 		private List<DBConfigItem> list;
-
+        private String cornStr;
         public string Sid { get => sid; set => sid = value; }
         public string Name { get => name; set => name = value; }
         public string TbName { get => tbName; set => tbName = value; }
@@ -24,5 +24,6 @@ namespace DBDataUpToServ
         public string Timefld { get => timefld; set => timefld = value; }
         public string Dbconf { get => dbconf; set => dbconf = value; }
         public List<DBConfigItem> List { get => list; set => list = value; }
+        public string CornStr { get => cornStr; set => cornStr = value; }
     }
 }
