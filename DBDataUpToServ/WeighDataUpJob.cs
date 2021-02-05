@@ -4,8 +4,6 @@ using NLog;
 using Quartz;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -52,7 +50,7 @@ namespace DBDataUpToServ
                 }
             }
             string from = " from " + conf.TbName;
-            string where = " where " + conf.Timefld + ">='{0}' and " + conf.Timefld + "<='{1}'";
+            string where = " where " + conf.Timefld + ">='{0}' and " + conf.Timefld + "<'{1}'";
             rsql = sql + from + where;
         }
 
@@ -63,6 +61,8 @@ namespace DBDataUpToServ
             {
                 string bgtime = DBTools.GetSearchBgTime(conf.Sid);
                 DateTime d1 = DateTime.Now;
+                int jgmin = -conf.Inter;
+                d1 = d1.AddMinutes(jgmin);
                 if (string.IsNullOrEmpty(bgtime))
                 {
                     bgtime = conf.Bgtime;

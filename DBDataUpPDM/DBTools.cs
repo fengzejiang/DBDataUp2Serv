@@ -7,17 +7,18 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 
 namespace DBDataUpPDM
 {
     public class DBTools
     {
-        //private const string UpDate_Main_Table = "update {0} set F_YLFlt9=F_Gross,F_Gross=CONVERT(int,F_Memo),F_Net = CONVERT(int,F_Memo)-F_Tare where isnull(f_memo,'')<>'' and isnull(F_YLFlt9,0)=0 and {1}";
         private static Logger logger = LogManager.GetCurrentClassLogger();
-        public static readonly string Create_Log_sql = "CREATE TABLE up_sys_logs(id [numeric](10,0) not NULL,remark nvarchar(MAX) NULL,up_time datetime NULL,primary key (id)) ";
-        public static readonly string Create_Config_sql = "CREATE TABLE up_sys_config(id varchar(50) NOT NULL,	bgtime datetime NULL,primary key (id)) ";
+        public static readonly string LOG_TABLE = "up_sys_logs_pdm";
+        public static readonly string LOG_TABLE_OLD = "up_sys_logs";
+        public static readonly string CONF_TABLE = "up_sys_config_pdm";
+        public static readonly string CONF_TABLE_OLD = "up_sys_config";
+        public static readonly string Create_Log_sql = "CREATE TABLE "+LOG_TABLE+"(id [numeric](20,0) not NULL,remark nvarchar(MAX) NULL,up_time datetime NULL,primary key (id)) ";
+        public static readonly string Create_Config_sql = "CREATE TABLE "+CONF_TABLE+"(id varchar(50) NOT NULL,	bgtime datetime NULL,primary key (id)) ";
         //public static readonly string Sync_Bak_sql = "insert into {0} ({4}) select {4} from {1} where {2} and isnull(F_Net,0)<>0 and {3} not in (select {3} from {0} where {2} )";
         //public static readonly string Create_Sync_sql = "select * into {0} from {1} where 1=2 ";
         
@@ -91,7 +92,7 @@ namespace DBDataUpPDM
             bool bok = false;
             if (connection.State == ConnectionState.Open)
             {
-                string sql = "select count(*) from up_sys_logs";
+                string sql = "select count(*) from "+LOG_TABLE;
                 SqlCommand cmd = new SqlCommand();
                 cmd.Connection = connection;
                 cmd.CommandText = sql;
@@ -119,87 +120,6 @@ namespace DBDataUpPDM
             return bok;
         }
 
-        ///// <summary>
-        ///// 检查并创建数据备份表
-        ///// </summary>
-        ///// <param name="tbName">主数据表名</param>
-        ///// <param name="bkName">备份表名</param>
-        ///// <returns></returns>
-        //public static bool checkBakTable(string tbName,string bkName)
-        //{
-        //    SqlConnection connection = new SqlConnection(DBLink);
-        //    connection.Open();
-        //    bool bok = false;
-        //    if (connection.State == ConnectionState.Open)
-        //    {
-        //        string sql = "select count(*) from "+bkName;
-        //        SqlCommand cmd = new SqlCommand();
-        //        cmd.Connection = connection;
-        //        cmd.CommandText = sql;
-        //        try
-        //        {
-        //            int count = Convert.ToInt32(cmd.ExecuteScalar());
-        //            if (count >= 0)
-        //            {
-        //                connection.Close();
-        //                bok = true;
-        //            }
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            logger.Error(ex, "查询日志表失败");
-        //            string s1 = Create_Sync_sql;
-        //            s1 = string.Format(s1, bkName, tbName);
-        //            logger.Info("开始创建日志表：" + s1);
-        //            cmd.CommandText = s1;
-        //            int k = cmd.ExecuteNonQuery();
-        //            logger.Info("完成创建日志表;");
-        //            bok = true;
-        //        }
-        //        finally
-        //        {
-        //            connection.Close();
-        //        }
-        //    }
-        //    return bok;
-        //}
-
-        ///// <summary>
-        ///// 将正式表数据写入备份表数据
-        ///// </summary>
-        ///// <returns></returns>
-        //public static bool WriteRecordToBakTable(string bakTabke, string mTb, string cont, string pkFld,string flds)
-        //{
-        //    SqlConnection connection = new SqlConnection(DBLink);
-        //    connection.Open();
-        //    bool bok = false;
-        //    if (connection.State == ConnectionState.Open)
-        //    {
-        //        string sql = Sync_Bak_sql;
-        //        sql = string.Format(sql, bakTabke,mTb, cont, pkFld,flds);
-        //        SqlCommand cmd = new SqlCommand(sql,connection);
-        //        try
-        //        {
-        //            logger.Info("写地磅数据到备份表：" + sql);
-        //            int k = cmd.ExecuteNonQuery();
-        //            bok = true;
-        //            string s2 = string.Format(UpDate_Main_Table, mTb, cont);
-        //            cmd.CommandText = s2;
-        //            cmd.ExecuteNonQuery();
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            logger.Error(ex, "写备份表失败"+sql);
-        //            bok = false;
-        //        }
-        //        finally
-        //        {
-        //            connection.Close();
-        //        }
-        //    }
-        //    return bok;
-        //}
-
         /// <summary>
         /// 检查记录是否上传过
         /// </summary>
@@ -211,7 +131,7 @@ namespace DBDataUpPDM
             connection.Open();
             if (connection.State == ConnectionState.Open)
             {
-                string sql = "select count(*) from up_sys_logs where id="+pkid+"";
+                string sql = "select count(*) from "+ LOG_TABLE + " where id="+pkid+"";
                 SqlCommand cmd = new SqlCommand();
                 cmd.Connection = connection;
                 cmd.CommandText = sql;
@@ -248,7 +168,7 @@ namespace DBDataUpPDM
             try
             {
                 SqlBulkCopy bulkCopy = new SqlBulkCopy(conn);
-                bulkCopy.DestinationTableName = "up_sys_logs";
+                bulkCopy.DestinationTableName = LOG_TABLE;
                 bulkCopy.BatchSize = dt.Rows.Count;
                 conn.Open();
                 sw.Start();
@@ -297,7 +217,7 @@ namespace DBDataUpPDM
         {
             SqlConnection connection = new SqlConnection(DBLink);
             connection.Open();
-            string sql = "select count(*) from up_sys_config where id='" + sid + "'";
+            string sql = "select count(*) from "+CONF_TABLE+" where id='" + sid + "'";
             if (connection.State == ConnectionState.Open)
             {
                 SqlCommand cmd = new SqlCommand();
@@ -306,13 +226,13 @@ namespace DBDataUpPDM
                 int count =  Convert.ToInt32(cmd.ExecuteScalar());
                 if (count != 0 )
                 {
-                    sql = "update up_sys_config set bgtime='" + bgtime + "' where id='" + sid + "'";
+                    sql = "update "+CONF_TABLE+" set bgtime='" + bgtime + "' where id='" + sid + "'";
                     cmd.CommandText = sql;
                     cmd.ExecuteNonQuery();
                     logger.Info("更新取数开始时间：" + sql);
                 }
                 else {
-                    sql = "insert into up_sys_config(id,bgtime) values('"+sid+"','" + bgtime + "')";
+                    sql = "insert into "+CONF_TABLE+"(id,bgtime) values('"+sid+"','" + bgtime + "')";
                     cmd.CommandText = sql;
                     cmd.ExecuteNonQuery();
                     logger.Info("更新取数开始时间：" + sql);
@@ -325,7 +245,7 @@ namespace DBDataUpPDM
             string bgtime = "";
             SqlConnection connection = new SqlConnection(DBLink);
             connection.Open();
-            string sql = "select top 1 bgtime from up_sys_config where id='" + id + "'";
+            string sql = "select top 1 bgtime from "+CONF_TABLE+" where id='" + id + "'";
             if (connection.State == ConnectionState.Open)
             {
                 SqlCommand cmd = new SqlCommand();
@@ -410,7 +330,7 @@ namespace DBDataUpPDM
             bool bok = false;
             if (connection.State == ConnectionState.Open)
             {
-                string sql = "select * from up_sys_config";
+                string sql = "select * from "+CONF_TABLE;
                 SqlCommand cmd = new SqlCommand();
                 cmd.Connection = connection;
                 cmd.CommandText = sql;

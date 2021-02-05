@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DBDataUpForm));
             this.tab0 = new System.Windows.Forms.TabControl();
             this.tabp0 = new System.Windows.Forms.TabPage();
@@ -54,6 +55,7 @@
             this.tb_uri = new System.Windows.Forms.TextBox();
             this.tabp1 = new System.Windows.Forms.TabPage();
             this.log_box = new System.Windows.Forms.RichTextBox();
+            this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.tab0.SuspendLayout();
             this.tabp0.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -354,6 +356,13 @@
             this.log_box.TabIndex = 0;
             this.log_box.Text = "";
             // 
+            // notifyIcon1
+            // 
+            this.notifyIcon1.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon1.Icon")));
+            this.notifyIcon1.Text = "地磅数据定时采集工具";
+            this.notifyIcon1.Visible = true;
+            this.notifyIcon1.DoubleClick += new System.EventHandler(this.notifyIcon1_DoubleClick);
+            // 
             // DBDataUpForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
@@ -366,7 +375,9 @@
             this.Name = "DBDataUpForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "数据定时采集工具";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DBDataUpForm_FormClosing);
             this.Load += new System.EventHandler(this.DBDataUpForm_Load);
+            this.SizeChanged += new System.EventHandler(this.DBDataUpForm_SizeChanged);
             this.tab0.ResumeLayout(false);
             this.tabp0.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
@@ -407,6 +418,7 @@
         private System.Windows.Forms.Button btn_save_local;
         private System.Windows.Forms.RichTextBox log_box;
         private System.Windows.Forms.Button btn_mod_conf;
+        private System.Windows.Forms.NotifyIcon notifyIcon1;
     }
 }
 

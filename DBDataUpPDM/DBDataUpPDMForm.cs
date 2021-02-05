@@ -85,7 +85,6 @@ namespace DBDataUpPDM
                         {
                             DBTools.insertOrUpDate(configM.Sid, configM.Bgtime);
                         }
-                        //checkBakDB();
                         checkLogDB();
                         
                         tb_conf_id.Enabled = false;
@@ -378,6 +377,8 @@ namespace DBDataUpPDM
                     tb_dbid.Text = dbid;
                     CURR_DBID = dbid;
                 }
+                this.Hide();
+                notifyIcon1.Visible = true;
                 ExcuteTask();
             }
         }
@@ -434,6 +435,47 @@ namespace DBDataUpPDM
             StopTask();
         }
 
+        private void notifyIcon1_DoubleClick(object sender, EventArgs e)
+        {
+            if (WindowState == FormWindowState.Minimized)
+            {
+                //激活窗体并给予它焦点
+                this.Show();
+                WindowState = FormWindowState.Normal;
+                this.Activate();
+                //任务栏区显示图标
+                //托盘区图标隐藏
+                notifyIcon1.Visible = false;
+            }
+        }
+
+        private void DBDataUpPDMForm_SizeChanged(object sender, EventArgs e)
+        {
+            //判断是否选择的是最小化按钮
+            if (WindowState == FormWindowState.Minimized)
+            {
+                //隐藏任务栏区图标
+                this.Hide();
+                //this.ShowInTaskbar = false;
+                //图标显示在托盘区
+                notifyIcon1.Visible = true;
+            }
+        }
+
+        private void DBDataUpPDMForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (MessageBox.Show("是否退出程序？\n确定则退出程序，取消则最小化至托盘", "退出", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
+            {
+                // 关闭所有的线程
+                this.Dispose();
+                this.Close();
+            }
+            else
+            {
+                e.Cancel = true;
+                this.WindowState = FormWindowState.Minimized;
+            }
+        }
     }
 }
 

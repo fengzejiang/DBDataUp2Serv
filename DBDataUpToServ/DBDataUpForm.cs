@@ -329,50 +329,7 @@ namespace DBDataUpToServ
 
         private void DBDataUpForm_Load(object sender, EventArgs e)
         {
-            MakeCircle();
-            if (iniFile.ExistINIFile()) {
-                string uri = iniFile.IniReadValue(ICL.SERV_LAB, ICL.SERV_URI);
-                tb_uri.Text = uri+"";
-                CURR_URI = uri;
-                string sid = iniFile.IniReadValue(ICL.SERV_LAB, ICL.SERV_SID);
-                tb_conf_id.Text = sid;
-                string conf = iniFile.IniReadValue(ICL.SERV_LAB, ICL.SERV_SCONF);
-                if (!string.IsNullOrEmpty(conf)) {
-                    try {
-                        conf = Tools.DecodeBase64("UTF-8", conf);
-                        configM = JsonConvert.DeserializeObject<DBConfigM>(conf);
-                    }
-                    catch (Exception ex) {
-                        logger.Error(ex, "加载ini文件读取conf错误！！");
-                        MessageBox.Show("非法串改配置文件数据");
-                    }
 
-                }
-                
-                string dblink = iniFile.IniReadValue(ICL.DB_LAB, ICL.DB_DBLINK);
-                if (!string.IsNullOrEmpty(dblink)) {
-                    DBTools.DBLink = dblink;
-                    CURR_DBConf = dblink;
-                }
-                string opr = iniFile.IniReadValue(ICL.LOCL_LAB, ICL.LOCL_OPR);
-                if (!string.IsNullOrEmpty(opr)) {
-                    tb_opr.Text = opr;
-                    CURR_OPR = opr;
-                }
-                string scm = iniFile.IniReadValue(ICL.LOCL_LAB, ICL.LOCL_SCM);
-                if (!string.IsNullOrEmpty(scm))
-                {
-                    tb_scm.Text = scm;
-                    CURR_SCM = scm;
-                }
-                string dbid = iniFile.IniReadValue(ICL.LOCL_LAB, ICL.LOCL_DBID);
-                if (!string.IsNullOrEmpty(dbid))
-                {
-                    tb_dbid.Text = dbid;
-                    CURR_DBID = dbid;
-                }
-                ExcuteTask();
-            }
         }
 
         #region 定义改变消息文本框委托及委托事件
@@ -445,6 +402,48 @@ namespace DBDataUpToServ
             {
                 logger.Error(ex);
                 MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void notifyIcon1_DoubleClick(object sender, EventArgs e)
+        {
+            if (WindowState == FormWindowState.Minimized)
+            {
+                //激活窗体并给予它焦点
+                this.Show();
+                WindowState = FormWindowState.Normal;
+                this.Activate();
+                //任务栏区显示图标
+                //托盘区图标隐藏
+                notifyIcon1.Visible = false;
+            }
+        }
+
+        private void DBDataUpForm_SizeChanged(object sender, EventArgs e)
+        {
+            //判断是否选择的是最小化按钮
+            if (WindowState == FormWindowState.Minimized)
+            {
+                //隐藏任务栏区图标
+                this.Hide();
+                //this.ShowInTaskbar = false;
+                //图标显示在托盘区
+                notifyIcon1.Visible = true;
+            }
+        }
+
+        private void DBDataUpForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (MessageBox.Show("是否退出程序？\n确定则退出程序，取消则最小化至托盘", "退出", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
+            {
+                // 关闭所有的线程
+                this.Dispose();
+                this.Close();
+            }
+            else
+            {
+                e.Cancel = true;
+                this.WindowState = FormWindowState.Minimized;
             }
         }
     }

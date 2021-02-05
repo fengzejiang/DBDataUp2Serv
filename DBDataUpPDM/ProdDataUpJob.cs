@@ -48,7 +48,7 @@ namespace DBDataUpPDM
                 }
             }
             string from = " from " + conf.TbName;
-            string where = " where " + conf.Timefld + ">='{0}' and " + conf.Timefld + "<='{1}'";
+            string where = " where " + conf.Timefld + ">='{0}' and " + conf.Timefld + "<'{1}'";
             rsql = sql + from + where;
         }
 
