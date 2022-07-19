@@ -12,9 +12,9 @@ namespace DBDataUpPDM
 {
     public partial class DBDataUpPDMForm : Form
     {
-        private const string JobName = "job1";
-        private const string Group = "group1";
-        private const string TrigName = "trigger1";
+        private const string JobName = "job1-sc";
+        private const string Group = "group1-sc";
+        private const string TrigName = "trigger1-sc";
         public static readonly string ini = Application.StartupPath + @"\initFile.ini";//ini文件
         static IniFiles iniFile = new IniFiles(ini);//初始化文件监听类
         private string  CURR_DBConf = "";

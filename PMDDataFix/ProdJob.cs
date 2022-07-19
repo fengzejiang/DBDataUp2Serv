@@ -102,7 +102,8 @@ namespace PMDDataFix
                             jd.ExecUpload(Tools.Now()+"小组开始执行上传：" +listup.Count);
                             sup = Tools.EncodeBase64("UTF-8", sup);
                             sup = Tools.EscapeExprSpecialWord(sup);
-                            Tools.HttpPostInfo(url + ICL.API_KEY, UP_KEY + sup);
+                            string url1 = @"http://8.129.40.31:8081/bip-erp/";
+                            Tools.HttpPostInfo(url1 + ICL.API_KEY, UP_KEY + sup);
                             jd.ExecUpload(Tools.Now()+"==>小组完成上传：" + listup.Count);
                             logger.Info("小组执行完成：" + sup);
                             logger.Info("开始写小组日志：");
@@ -117,7 +118,8 @@ namespace PMDDataFix
                         logger.Info("开始执行尾数上传：" + sup);
                         sup = Tools.EncodeBase64("UTF-8", sup);
                         sup = Tools.EscapeExprSpecialWord(sup);
-                        Tools.HttpPostInfo(url + ICL.API_KEY, UP_KEY + sup);
+                        string url1 = @"http://8.129.40.31:8081/bip-erp/";
+                        Tools.HttpPostInfo(url1 + ICL.API_KEY, UP_KEY + sup);
                         logger.Info("尾数执行完成：" + sup);
                         logger.Info("开始写尾数日志：");
                         DBTools.WriteSysUpLog(listup);

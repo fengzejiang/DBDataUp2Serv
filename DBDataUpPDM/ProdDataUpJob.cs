@@ -30,6 +30,7 @@ namespace DBDataUpPDM
         private string rsql;
         public Task Execute(IJobExecutionContext context)
         {
+            jd.ExecUpload("开始执行数据获取！");
             makeSql();
             UpLoadWeightData();
             return Task.Delay(2);

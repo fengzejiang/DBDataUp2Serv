@@ -14,9 +14,9 @@ namespace DBDataUpPDM
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
         public static readonly string LOG_TABLE = "up_sys_logs_pdm";
-        public static readonly string LOG_TABLE_OLD = "up_sys_logs";
+        //public static readonly string LOG_TABLE_OLD = "up_sys_logs";
         public static readonly string CONF_TABLE = "up_sys_config_pdm";
-        public static readonly string CONF_TABLE_OLD = "up_sys_config";
+        //public static readonly string CONF_TABLE_OLD = "up_sys_config";
         public static readonly string Create_Log_sql = "CREATE TABLE "+LOG_TABLE+"(id [numeric](20,0) not NULL,remark nvarchar(MAX) NULL,up_time datetime NULL,primary key (id)) ";
         public static readonly string Create_Config_sql = "CREATE TABLE "+CONF_TABLE+"(id varchar(50) NOT NULL,	bgtime datetime NULL,primary key (id)) ";
         //public static readonly string Sync_Bak_sql = "insert into {0} ({4}) select {4} from {1} where {2} and isnull(F_Net,0)<>0 and {3} not in (select {3} from {0} where {2} )";
@@ -74,7 +74,7 @@ namespace DBDataUpPDM
                 return list;
             }
             catch (Exception ex) {
-                throw ex;
+               throw ex;
             }
             finally {
                 connection.Close();
